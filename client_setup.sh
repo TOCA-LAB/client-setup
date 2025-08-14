@@ -1,5 +1,22 @@
 #!/usr/bin/bash
 
+# ==============================================================================
+#  TOCA's Client Setup
+#
+#  Copyright (c) 2025 Maycon Sambinelli
+# ==============================================================================
+#
+#  This script is provided "as is", without warranty of any kind, express or
+#  implied, including but not limited to the warranties of merchantability or
+#  fitness for a particular purpose.
+#
+#  Permission is hereby granted to use, copy, modify, and distribute this
+#  script, provided that this copyright notice and disclaimer are retained.
+#
+#  Maintainer: Maycon Sambinelli <msambinelli@gmail.com>
+#  License: MIT
+# ==============================================================================
+
 declare -A PKG
 declare -A GETPKG
 
@@ -11,9 +28,9 @@ declare -A GETPKG
 
 # Variables --------------------------------------------------------------------
 
-# Packages from the system repository 
-# You can use any name as the key for the array. Their are use exclusively to 
-# organize the packages. 
+# Packages from the system repository
+# You can use any name as the key for the array. Their are use exclusively to
+# organize the packages.
 PKG[DEBUGGERS]="cgdb gdb lldb valgrind"
 PKG[SYNC_TOOLS]="syncthing syncthing-gtk rsync"
 PKG[SCREENSHOT]="flameshot"
@@ -34,7 +51,7 @@ PKG[DOC_TOOLS]="pandoc"
 PKG[SSH_TOOLS]="ssh"
 PKG[COMPILERS]="clang clang-format build-essential"
 PKG[MONITORING]="htop"
-PKG[LATEX_TOOLS]="texlive-full texstudio"
+PKG[LATEX_TOOLS]="texlive-full texstudio tikzit"
 PKG[AUTH_TOOLS]="sssd-ad sssd-tools realmd adcli"
 PKG[TERMINAL_MULTIPLEXERS]="tmux screen"
 PKG[TERMINAL_EMULATORS]="tilix"
@@ -52,7 +69,6 @@ GETPKG["Google Chrome"]="https://dl.google.com/linux/direct/google-chrome-stable
 GETPKG["Visual Studio Code"]="https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
 GETPKG["Obsidian"]="https://github.com/obsidianmd/obsidian-releases/releases/download/v1.8.10/obsidian_1.8.10_amd64.deb"
 GETPKG["Balena Etcher"]="https://github.com/balena-io/etcher/releases/download/v2.1.4/balena-etcher_2.1.4_amd64.deb"
-GETPKG["TikZit"]="https://github.com/tikzit/tikzit/releases/download/v0.14.3/tikzit-0.14.3-amd64.deb"
 GETPKG["Oracle Java"]="https://download.oracle.com/java/24/latest/jdk-24_linux-x64_bin.deb"
 
 
@@ -60,7 +76,7 @@ GETPKG["Oracle Java"]="https://download.oracle.com/java/24/latest/jdk-24_linux-x
 
 install_zotero(){
   if [ ! -d /opt/Zotero_linux-x86_64 ]; then
-    echo "\U0001f539 Installing Zotero..."
+    echo "ðŸ”¹ Installing Zotero..."
     wget -c "https://www.zotero.org/download/client/dl?channel=release&platform=linux-x86_64" -O /tmp/zotero.tar.bz2
     tar -xjf /tmp/zotero.tar.bz2 -C /opt
     rm /tmp/zotero.tar.bz2
@@ -72,7 +88,7 @@ INSTALLERS+=(install_zotero)
 
 install_spotify() {
   if ! command -v spotify >/dev/null 2>&1; then
-    echo "\U0001f539 Installing Spotify..."
+    echo "ðŸ”¹ Installing Spotify..."
     curl -sS https://download.spotify.com/debian/pubkey_C85668DF69375001.gpg | gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg
     echo "deb https://repository.spotify.com stable non-free" | tee /etc/apt/sources.list.d/spotify.list
     apt-get update && apt-get install -y spotify-client
@@ -83,8 +99,7 @@ INSTALLERS+=(install_spotify)
 
 install_lazygit(){
   if ! command -v lazygit >/dev/null 2>&1; then
-    echo "\U0001f539 Installing Lazygit..."
-    echo "Instalando Lazygit..."
+    echo "ðŸ”¹ Installing Lazygit..."
     wget -qO-  https://github.com/jesseduffield/lazygit/releases/download/v0.54.2/lazygit_0.54.2_linux_x86_64.tar.gz  | tar -xz -C /tmp
     install /tmp/lazygit /usr/local/bin/
   fi
@@ -94,20 +109,22 @@ INSTALLERS+=(install_lazygit)
 
 
 install_gurobi() {
-  echo "\U0001f539 Installing Gurobi..."
+  echo "ðŸ”¹ Installing Gurobi..."
   wget -c https://packages.gurobi.com/12.0/gurobi12.0.3_linux64.tar.gz -O /tmp/gurobi.tar.gz
   tar -xzf /tmp/gurobi.tar.gz -C /opt
-  rm -rf /tmp/gurobi.tar.gz 
+  rm -rf /tmp/gurobi.tar.gz
 
-  echo 'GUROBI_HOME=/opt/gurobi1203/linux64/' >> /etc/environment
-  echo 'LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"' >> /etc/environment
-  echo 'GRB_LICENSE_FILE=${HOME}/.gurobi.lic' >> /etc/environment 
+  local GUROBI_HOME="/opt/gurobi1203/linux64/"
+  echo "GUROBI_HOME=${GUROBI_HOME}" >> /etc/environment
+  echo "PATH=${PATH}:${GUROBI_HOME}/bin" >> /etc/environment
+  echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib" >> /etc/environment
+  echo 'export GRB_LICENSE_FILE=${HOME}/.gurobi.lic' >> /etc/skel/.bashrc
 }
 
 INSTALLERS+=(install_gurobi)
 
 install_sagemath() {
-  echo "\U0001f539 Installing Sagemath..."
+  echo "Installing Sagemath..."
   cd /opt/
   git clone --branch master https://github.com/sagemath/sage.git
   cd sage
@@ -137,11 +154,12 @@ SETUP_TASKS+=(enable_ssh)
 
 
 config_java() {
-    echo "\U0001f539Configuring Oracle Java" 
+    echo "Configuring Oracle Java"
     # update-alternatives --install /usr/bin/java java "/usr/lib/jvm/java-17-openjdk-amd64/bin/java" 1
     # update-alternatives --set java "/usr/lib/jvm/java-17-openjdk-amd64/bin/java"
-    echo 'JAVA_HOME=/usr/lib/jvm/jdk-24.0.2-oracle-x64' >> /etc/environment
-    echo 'PATH=${PATH}:${JAVA_HOME}/bin' >> /etc/environment
+    local JAVA_HOME="/usr/lib/jvm/jdk-24.0.2-oracle-x64"
+    echo "JAVA_HOME=${JAVA_HOME}" >> /etc/environment
+    echo "PATH=${PATH}:${JAVA_HOME}/bin" >> /etc/environment
 }
 
 SETUP_TASKS+=(config_java)
@@ -156,7 +174,7 @@ create_toca_admin_user() {
     mkdir -p "$SSH_DIR"
     chmod 700 "$SSH_DIR"
 
-    # Install public key 
+    # Install public key
     cat << 'EOF' > "$SSH_DIR/authorized_keys"
     ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPSRyQHPVGi/YfcIS4Xep7O4sDXgFlVlLDEbnkoygKyL
 EOF
@@ -179,19 +197,18 @@ msg() {
   echo -e "\033[1;34m\u21d2\033[0;0m $1"
 }
 
-install_deb() {
-  wget -c "$1" -O /tmp/package.deb
-  dpkg -i /tmp/package.deb || apt install -f -y
-  rm -f /tmp/package.deb
-}
+# download_deb_and_install() {
+#   wget -c "$1" -O /tmp/package.deb
+#   dpkg -i /tmp/package.deb || apt install -f -y
+#   rm -f /tmp/package.deb
+# }
 
 download_deb_and_install() {
     local url="$1"
-    local tmpfile
-    tmpfile=$(mktemp)
-    wget -q --show-progress -O "$tmpfile" "$url"
-    dpkg -i "$tmpfile" || apt install -f -y
-    rm -f "$tmpfile"
+    local tmpfile=$(mktemp --suffix=.deb)
+    wget -q --show-progress -c --content-disposition -O "${tmpfile}" "${url}"
+    dpkg -i "${tmpfile}" || apt install -f -y
+    rm -f "${tmpfile}"
 }
 
 print_banner() {
@@ -223,10 +240,10 @@ install_system_packages() {
 }
 
 
-install_packates_from_web() {
+install_packages_from_web() {
 	msg "Installing packages from web"
 	for name in "${!GETPKG[@]}"; do
-	  echo "\U0001f539 Instaling: $name"
+	  echo "ðŸ”¹ Instaling: $name"
 	  download_deb_and_install "${GETPKG[$name]}"
 	done
 }
@@ -239,7 +256,7 @@ install_snap_packages() {
 install_apps_from_src() {
 	msg "Installing apps from source"
 	for func in "${INSTALLERS[@]}"; do
-	    echo "$func"
+		"$func"
 	done
 }
 
@@ -271,22 +288,21 @@ msg "Updating system packages"
 apt update
 
 install_system_packages
-install_packates_from_web
+install_packages_from_web
 install_snap_packages
 install_apps_from_src
 
 setting_configurations
 
 
-# # Adicionar máquina ao Active Directory
-# echo "=== Adicionando máquina ao AD ==="
-# read -p "Digite o domínio AD (ex: exemplo.local): " AD_DOMAIN
-# read -p "Digite o usuário AD com permissão para ingressar: " AD_USER
+# # Adicionar mï¿½quina ao Active Directory
+# echo "=== Adicionando mï¿½quina ao AD ==="
+# read -p "Digite o domï¿½nio AD (ex: exemplo.local): " AD_DOMAIN
+# read -p "Digite o usuï¿½rio AD com permissï¿½o para ingressar: " AD_USER
 #
 # realm join --user="$AD_USER" "$AD_DOMAIN"
 # if [ $? -eq 0 ]; then
-#     echo "Máquina adicionada ao AD com sucesso."
+#     echo "Mï¿½quina adicionada ao AD com sucesso."
 # else
 #     echo "Falha ao adicionar ao AD."
 # fi
-
