@@ -2,8 +2,6 @@
 
 declare -A PKG
 declare -A GETPKG
-declare -A INSTALLERS
-declare -A SETUP_TASKS
 
 # ==============================================================================
 #
@@ -25,7 +23,7 @@ PKG[PYTHON_TOOLS]="jupyter ipython3 python3-pip"
 PKG[VCS_TOOLS]="git gitg"
 PKG[GRAPHIC_EDITORS]="gimp inkscape"
 PKG[DIFF_TOOLS]="meld git-delta"
-PKG[MEDIA_PLAYERS]="vlc mvp mplayer"
+PKG[MEDIA_PLAYERS]="vlc mpv mplayer"
 PKG[EMAIL_CLIENTS]="thunderbird neomutt"
 PKG[SEARCH_TOOLS]="fzf ripgrep ack"
 PKG[LAUNCHERS]="rofi"
@@ -41,7 +39,7 @@ PKG[AUTH_TOOLS]="sssd-ad sssd-tools realmd adcli"
 PKG[TERMINAL_MULTIPLEXERS]="tmux screen"
 PKG[TERMINAL_EMULATORS]="tilix"
 PKG[PASSWORD_MANAGERS]="keepassxc"
-PKG[UTILS]="tree trash-cli bat exa jq zsh"
+PKG[UTILS]="tree trash-cli bat eza jq zsh"
 PKG[JAVASCRIPT]="nodejs npm"
 PKG[AUDIO]="audacity"
 PKG[RESEARCH]="nauty"
@@ -62,7 +60,7 @@ GETPKG["Oracle Java"]="https://download.oracle.com/java/24/latest/jdk-24_linux-x
 
 install_zotero(){
   if [ ! -d /opt/Zotero_linux-x86_64 ]; then
-    echo "🔹 Installing Zotero..."
+    echo "\U0001f539 Installing Zotero..."
     wget -c "https://www.zotero.org/download/client/dl?channel=release&platform=linux-x86_64" -O /tmp/zotero.tar.bz2
     tar -xjf /tmp/zotero.tar.bz2 -C /opt
     rm /tmp/zotero.tar.bz2
@@ -74,7 +72,7 @@ INSTALLERS+=(install_zotero)
 
 install_spotify() {
   if ! command -v spotify >/dev/null 2>&1; then
-    echo "🔹 Installing Spotify..."
+    echo "\U0001f539 Installing Spotify..."
     curl -sS https://download.spotify.com/debian/pubkey_C85668DF69375001.gpg | gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg
     echo "deb https://repository.spotify.com stable non-free" | tee /etc/apt/sources.list.d/spotify.list
     apt-get update && apt-get install -y spotify-client
@@ -85,7 +83,7 @@ INSTALLERS+=(install_spotify)
 
 install_lazygit(){
   if ! command -v lazygit >/dev/null 2>&1; then
-    echo "🔹 Installing Lazygit..."
+    echo "\U0001f539 Installing Lazygit..."
     echo "Instalando Lazygit..."
     wget -qO-  https://github.com/jesseduffield/lazygit/releases/download/v0.54.2/lazygit_0.54.2_linux_x86_64.tar.gz  | tar -xz -C /tmp
     install /tmp/lazygit /usr/local/bin/
@@ -96,20 +94,20 @@ INSTALLERS+=(install_lazygit)
 
 
 install_gurobi() {
-  echo "🔹 Installing Gurobi..."
+  echo "\U0001f539 Installing Gurobi..."
   wget -c https://packages.gurobi.com/12.0/gurobi12.0.3_linux64.tar.gz -O /tmp/gurobi.tar.gz
   tar -xzf /tmp/gurobi.tar.gz -C /opt
   rm -rf /tmp/gurobi.tar.gz 
 
-  echo 'export GUROBI_HOME=/opt/gurobi1200/linux64/' >> /etc/environment
-  echo 'export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"' >> /etc/environment
-  echo 'export GRB_LICENSE_FILE=$HOME/.gurobi.lic' >> /etc/environment 
+  echo 'GUROBI_HOME=/opt/gurobi1203/linux64/' >> /etc/environment
+  echo 'LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"' >> /etc/environment
+  echo 'GRB_LICENSE_FILE=${HOME}/.gurobi.lic' >> /etc/environment 
 }
 
 INSTALLERS+=(install_gurobi)
 
 install_sagemath() {
-  echo "🔹 Installing Sagemath..."
+  echo "\U0001f539 Installing Sagemath..."
   cd /opt/
   git clone --branch master https://github.com/sagemath/sage.git
   cd sage
@@ -119,7 +117,7 @@ install_sagemath() {
   ln -sf $(pwd)/sage /usr/local/bin
 }
 
-INSTALLERS+=(install_sagemath)
+# INSTALLERS+=(install_sagemath)
 
 
 # ------------------------------------------------------------------------------
@@ -139,20 +137,19 @@ SETUP_TASKS+=(enable_ssh)
 
 
 config_java() {
-    echo "🔹Configuring Oracle Java" 
-    update-alternatives --install /usr/bin/java java "/usr/lib/jvm/java-17-openjdk-amd64/bin/java" 1
-    update-alternatives --set java "/usr/lib/jvm/java-17-openjdk-amd64/bin/java"
-    echo 'export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64' >> /etc/environment
-    echo 'export PATH=$PATH:${JAVA_HOME}/bin' >> /etc/environment
+    echo "\U0001f539Configuring Oracle Java" 
+    # update-alternatives --install /usr/bin/java java "/usr/lib/jvm/java-17-openjdk-amd64/bin/java" 1
+    # update-alternatives --set java "/usr/lib/jvm/java-17-openjdk-amd64/bin/java"
+    echo 'JAVA_HOME=/usr/lib/jvm/jdk-24.0.2-oracle-x64' >> /etc/environment
+    echo 'PATH=${PATH}:${JAVA_HOME}/bin' >> /etc/environment
 }
 
 SETUP_TASKS+=(config_java)
 
 
 create_toca_admin_user() {
-  if ! id "toca-admin" >/dev/null 2>&1; then
 
-    usermod -p '$6$I4.AEGsHjqIRCAra$w8jTpk30UljqQxo.mnlJH3ns029VexHyLYcAFbiBEFcEVWFBs0BRIFIt1yAOvxzSYxu1qJ5Bqg1twYnvBZcLJ.' toca-admin
+    usermod -p '$y$j9T$YLKRqGZnZVqI1G/1cHIkO.$.eX41ttnp.59P78z5/bGSp.pB.bRtXkPO6AuLFMdCq9' toca-admin
     usermod -aG sudo toca-admin
 
     SSH_DIR="/home/toca-admin/.ssh"
@@ -162,16 +159,13 @@ create_toca_admin_user() {
     # Install public key 
     cat << 'EOF' > "$SSH_DIR/authorized_keys"
     ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPSRyQHPVGi/YfcIS4Xep7O4sDXgFlVlLDEbnkoygKyL
-    EOF
+EOF
 
     chmod 600 "$SSH_DIR/authorized_keys"
     chown -R toca-admin:toca-admin "$SSH_DIR"
-  fi
 }
 
 SETUP_TASKS+=(create_toca_admin_user)
-
-# XXX preciso verificar se existe um usuário chamado toca-admin
 
 # ------------------------------------------------------------------------------
 #
@@ -182,12 +176,12 @@ SETUP_TASKS+=(create_toca_admin_user)
 ALL_PACKAGES="${PKG[*]}"
 
 msg() {
-  echo -e "\033[1;34m⇒\033[0;0m $1"
+  echo -e "\033[1;34m\u21d2\033[0;0m $1"
 }
 
 install_deb() {
   wget -c "$1" -O /tmp/package.deb
-  dpkg -i /tmp/package.deb || apt-get install -f -y
+  dpkg -i /tmp/package.deb || apt install -f -y
   rm -f /tmp/package.deb
 }
 
@@ -196,7 +190,7 @@ download_deb_and_install() {
     local tmpfile
     tmpfile=$(mktemp)
     wget -q --show-progress -O "$tmpfile" "$url"
-    dpkg -i "$tmpfile" || apt-get install -f -y
+    dpkg -i "$tmpfile" || apt install -f -y
     rm -f "$tmpfile"
 }
 
@@ -212,6 +206,41 @@ print_banner() {
   echo ' \/__\:\  \      \:\/:/  /     \:\/:/  /     \:\  \     '
   echo '      \:\__\      \::/  /       \::/  /       \:\__\    '
   echo '       \/__/       \/__/         \/__/         \/__/    '
+  echo ''
+}
+
+
+setting_configurations() {
+	msg "Setting configurations"
+	for func in "${SETUP_TASKS[@]}"; do
+		"$func"
+	done
+}
+
+install_system_packages() {
+	msg "Installing packages from system's repository"
+	apt install -y $ALL_PACKAGES
+}
+
+
+install_packates_from_web() {
+	msg "Installing packages from web"
+	for name in "${!GETPKG[@]}"; do
+	  echo "\U0001f539 Instaling: $name"
+	  download_deb_and_install "${GETPKG[$name]}"
+	done
+}
+
+install_snap_packages() {
+	msg "Installing Snaps"
+	snap install telegram-desktop
+}
+
+install_apps_from_src() {
+	msg "Installing apps from source"
+	for func in "${INSTALLERS[@]}"; do
+	    echo "$func"
+	done
 }
 
 # ------------------------------------------------------------------------------
@@ -220,52 +249,43 @@ print_banner() {
 #
 # ------------------------------------------------------------------------------
 
-print_banner()
+print_banner
 
-if [ "$(id -u)" -ne 0 ]; then
-  echo "This script must be exectured as root or using sudo." >&2
+if [ "$(id -u)" != "0" ]; then
+  echo "Error: this script must be exectured as root or using sudo." >&2
   exit 1
 fi
 
-if [ "$USER" != "toca-admin" ]; then
+if ! id "toca-admin" >/dev/null 2>&1; then
   echo "The user 'toca-admin' does not exist! You must create it before running this script." >&2
   exit 1
+fi
+
+if [ ! $# -eq 0 ]; then
+    # call the function which the name was provided in the command line
+    $1
+    exit 0
 fi
 
 msg "Updating system packages"
 apt update
 
-msg "Installing packages from system's repository"
-apt install -y $ALL_PACKAGES
+install_system_packages
+install_packates_from_web
+install_snap_packages
+install_apps_from_src
 
-msg "Installing packages from web"
-for name in "${!GETPKG[@]}"; do
-  echo "🔹 Instaling: $name"
-  download_deb_and_install "${DEB_PACKAGES[$name]}"
-done
-
-msg "Installing Snaps"
-snap install telegram-desktop
-
-msg "Installing apps from source"
-for func in "${INSTALLERS[@]}"; do
-    "$func"
-done
-
-msg "Setting configurations"
-for func in "${SETUP_TASKS[@]}"; do
-    "$func"
-done
+setting_configurations
 
 
-# # Adicionar máquina ao Active Directory
-# echo "=== Adicionando máquina ao AD ==="
-# read -p "Digite o domínio AD (ex: exemplo.local): " AD_DOMAIN
-# read -p "Digite o usuário AD com permissão para ingressar: " AD_USER
+# # Adicionar m�quina ao Active Directory
+# echo "=== Adicionando m�quina ao AD ==="
+# read -p "Digite o dom�nio AD (ex: exemplo.local): " AD_DOMAIN
+# read -p "Digite o usu�rio AD com permiss�o para ingressar: " AD_USER
 #
 # realm join --user="$AD_USER" "$AD_DOMAIN"
 # if [ $? -eq 0 ]; then
-#     echo "Máquina adicionada ao AD com sucesso."
+#     echo "M�quina adicionada ao AD com sucesso."
 # else
 #     echo "Falha ao adicionar ao AD."
 # fi
