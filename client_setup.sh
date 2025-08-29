@@ -28,9 +28,12 @@ declare -A GETPKG
 
 # Variables --------------------------------------------------------------------
 
-# Packages from the system repository
-# You can use any name as the key for the array. Their are use exclusively to
-# organize the packages.
+DNS_SERVER="172.17.162.153"
+DOMAIN="toca-samba.toca.int"
+
+# Packages to install from the system repository
+# Each array key can be any descriptive name.
+# These keys are used solely for organizing the packages.
 PKG[DEBUGGERS]="cgdb gdb lldb valgrind"
 PKG[SYNC_TOOLS]="syncthing syncthing-gtk rsync"
 PKG[SCREENSHOT]="flameshot"
@@ -62,15 +65,16 @@ PKG[AUDIO]="audacity"
 PKG[RESEARCH]="nauty"
 PKG[RUST]="rust-all cargo"
 PKG[SAGEMATH_DEPENDENCIES]="automake bc binutils bzip2 ca-certificates cliquer cmake curl ecl eclib-tools fflas-ffpack flintqs g++ gengetopt gfan gfortran git glpk-utils gmp-ecm lcalc libatomic-ops-dev libboost-dev libbraiding-dev libbz2-dev libcdd-dev libcdd-tools libcliquer-dev libcurl4-openssl-dev libec-dev libecm-dev libffi-dev libflint-dev libfreetype-dev libgc-dev libgd-dev libgf2x-dev libgiac-dev libgivaro-dev libglpk-dev libgmp-dev libgsl-dev libhomfly-dev libiml-dev liblfunction-dev liblrcalc-dev liblzma-dev libm4rie-dev libmpc-dev libmpfi-dev libmpfr-dev libncurses-dev libntl-dev libopenblas-dev libpari-dev libpcre3-dev libplanarity-dev libppl-dev libprimesieve-dev libpython3-dev libqhull-dev libreadline-dev librw-dev libsingular4-dev libsqlite3-dev libssl-dev libsuitesparse-dev libsymmetrica2-dev zlib1g-dev libzmq3-dev libzn-poly-dev m4 make nauty openssl palp pari-doc pari-elldata pari-galdata pari-galpol pari-gp2c pari-seadata patch perl pkg-config planarity ppl-dev python3-setuptools python3-venv r-base-dev r-cran-lattice singular sqlite3 sympow tachyon tar tox xcas xz-utils texlive-latex-extra texlive-xetex latexmk pandoc dvipng"
+PKG[TOCAADSAMBA]="sssd-ad sssd-tools realmd adcli"
 
 # Packages to be downloaded from the web
-# The name in the key of the array is used only to print the name in screen.
+# The name in the key is used only to print the name in the screen.
 GETPKG["Google Chrome"]="https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
 GETPKG["Visual Studio Code"]="https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
 GETPKG["Obsidian"]="https://github.com/obsidianmd/obsidian-releases/releases/download/v1.8.10/obsidian_1.8.10_amd64.deb"
 GETPKG["Balena Etcher"]="https://github.com/balena-io/etcher/releases/download/v2.1.4/balena-etcher_2.1.4_amd64.deb"
 GETPKG["Oracle Java"]="https://download.oracle.com/java/24/latest/jdk-24_linux-x64_bin.deb"
-
+GETPKG["Sagemath"]="https://github.com/TOCA-LAB/sagemath-ubuntu-deb/releases/download/v0.0.1/sagemath_10.7-0_amd64.deb"
 
 #  Functions for installing apps -----------------------------------------------
 
@@ -107,34 +111,25 @@ install_lazygit(){
 
 INSTALLERS+=(install_lazygit)
 
-
 install_gurobi() {
-  echo "🔹 Installing Gurobi..."
-  wget -c https://packages.gurobi.com/12.0/gurobi12.0.3_linux64.tar.gz -O /tmp/gurobi.tar.gz
-  tar -xzf /tmp/gurobi.tar.gz -C /opt
-  rm -rf /tmp/gurobi.tar.gz
 
   local GUROBI_HOME="/opt/gurobi1203/linux64/"
-  echo "GUROBI_HOME=${GUROBI_HOME}" >> /etc/environment
-  echo "PATH=${PATH}:${GUROBI_HOME}/bin" >> /etc/environment
-  echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib" >> /etc/environment
-  echo 'export GRB_LICENSE_FILE=${HOME}/.gurobi.lic' >> /etc/skel/.bashrc
+
+  if [ ! -d "${GUROBI_HOME}" ]; then
+    echo "🔹 Installing Gurobi..."
+    wget -c https://packages.gurobi.com/12.0/gurobi12.0.3_linux64.tar.gz -O /tmp/gurobi.tar.gz
+    tar -xzf /tmp/gurobi.tar.gz -C /opt
+    rm -rf /tmp/gurobi.tar.gz
+
+    echo "GUROBI_HOME=${GUROBI_HOME}" >> /etc/environment
+    echo "PATH=${PATH}:${GUROBI_HOME}/bin" >> /etc/environment
+    echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib" >> /etc/environment
+    echo 'export GRB_LICENSE_FILE=${HOME}/.gurobi.lic' >> /etc/skel/.bashrc
+  fi
+
 }
 
 INSTALLERS+=(install_gurobi)
-
-install_sagemath() {
-  echo "Installing Sagemath..."
-  cd /opt/
-  git clone --branch master https://github.com/sagemath/sage.git
-  cd sage
-  make configure
-  ./configure
-  MAKE="make -j8" make
-  ln -sf $(pwd)/sage /usr/local/bin
-}
-
-# INSTALLERS+=(install_sagemath)
 
 
 # ------------------------------------------------------------------------------
@@ -144,28 +139,28 @@ install_sagemath() {
 # ------------------------------------------------------------------------------
 
 enable_ssh() {
-  msg "Enabling ssh-server"
-  apt install -y openssh-server
+  echo "🔹 Enabling ssh-server"
   systemctl enable ssh
   systemctl start ssh
 }
 
 SETUP_TASKS+=(enable_ssh)
 
-
 config_java() {
-    echo "Configuring Oracle Java"
-    # update-alternatives --install /usr/bin/java java "/usr/lib/jvm/java-17-openjdk-amd64/bin/java" 1
-    # update-alternatives --set java "/usr/lib/jvm/java-17-openjdk-amd64/bin/java"
     local JAVA_HOME="/usr/lib/jvm/jdk-24.0.2-oracle-x64"
-    echo "JAVA_HOME=${JAVA_HOME}" >> /etc/environment
-    echo "PATH=${PATH}:${JAVA_HOME}/bin" >> /etc/environment
+
+    if [ ! -d "${JAVA_HOME}" ]; then
+      echo "🔹 Configuring Oracle Java"
+      echo "JAVA_HOME=${JAVA_HOME}" >> /etc/environment
+      echo "PATH=${PATH}:${JAVA_HOME}/bin" >> /etc/environment
+    fi
 }
 
 SETUP_TASKS+=(config_java)
 
-
 create_toca_admin_user() {
+
+    echo "🔹 Setting toca-admin user"
 
     usermod -p '$y$j9T$YLKRqGZnZVqI1G/1cHIkO.$.eX41ttnp.59P78z5/bGSp.pB.bRtXkPO6AuLFMdCq9' toca-admin
     usermod -aG sudo toca-admin
@@ -184,6 +179,48 @@ EOF
 }
 
 SETUP_TASKS+=(create_toca_admin_user)
+
+join_toca_active_directory() {
+
+  echo "🔹 Joining TOCA Active Directory"
+
+  if ! command -v nmcli &>/dev/null; then
+      echo "Error: the nmcli command is not available. Install NetworkManager."
+      exit 1
+  fi
+
+  # ===== DNS CONFIGURATION =====
+  echo "Configuring DNS to $DNS_SERVER..."
+
+  # Get the active connection
+  CONNECTION=$(nmcli -t -f NAME connection show --active | head -n 1)
+
+  if [[ -z "$CONNECTION" ]]; then
+      echo "No active network connection found."
+      exit 1
+  fi
+
+  echo "Detected active connection: $CONNECTION"
+
+  # Ignore DHCP-provided DNS and set only the Samba server
+  nmcli connection modify "$CONNECTION" ipv4.ignore-auto-dns yes
+  nmcli connection modify "$CONNECTION" ipv4.dns "$DNS_SERVER"
+
+  # Restart the connection to apply changes
+  nmcli connection down "$CONNECTION" && nmcli connection up "$CONNECTION"
+
+  echo "Joining the machine to domain $DOMAIN..."
+  realm join "$DOMAIN"
+  if [[ $? -ne 0 ]]; then
+      echo "Failed to join the machine to the domain."
+      exit 1
+  fi
+
+  echo "Enabling automatic home directory creation..."
+  pam-auth-update --enable mkhomedir
+}
+
+SETUP_TASKS+=(join_toca_active_directory)
 
 # ------------------------------------------------------------------------------
 #
@@ -291,18 +328,8 @@ install_system_packages
 install_packages_from_web
 install_snap_packages
 install_apps_from_src
-
 setting_configurations
 
+print_banner
+echo "The installation is complete. You should reboot the machine now!"
 
-# # Adicionar m�quina ao Active Directory
-# echo "=== Adicionando m�quina ao AD ==="
-# read -p "Digite o dom�nio AD (ex: exemplo.local): " AD_DOMAIN
-# read -p "Digite o usu�rio AD com permiss�o para ingressar: " AD_USER
-#
-# realm join --user="$AD_USER" "$AD_DOMAIN"
-# if [ $? -eq 0 ]; then
-#     echo "M�quina adicionada ao AD com sucesso."
-# else
-#     echo "Falha ao adicionar ao AD."
-# fi
