@@ -218,6 +218,8 @@ join_toca_active_directory() {
 
   echo "Enabling automatic home directory creation..."
   pam-auth-update --enable mkhomedir
+
+
 }
 
 SETUP_TASKS+=(join_toca_active_directory)
@@ -273,7 +275,7 @@ setting_configurations() {
 
 install_system_packages() {
 	msg "Installing packages from system's repository"
-	apt install -y $ALL_PACKAGES
+	DEBIAN_FRONTEND=noninteractive apt install -y $ALL_PACKAGES
 }
 
 
