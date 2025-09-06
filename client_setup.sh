@@ -246,7 +246,7 @@ download_deb_and_install() {
     local url="$1"
     local tmpfile=$(mktemp --suffix=.deb)
     wget -q --show-progress -c --content-disposition -O "${tmpfile}" "${url}"
-    dpkg -i "${tmpfile}" || apt install -f -y
+    DEBIAN_FRONTEND=noninteractive dpkg -i "${tmpfile}" || apt install -f -y
     rm -f "${tmpfile}"
 }
 
