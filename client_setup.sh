@@ -64,7 +64,7 @@ PKG[JAVASCRIPT]="nodejs npm"
 PKG[AUDIO]="audacity"
 PKG[RESEARCH]="nauty"
 PKG[RUST]="rust-all cargo"
-PKG[SAGEMATH_DEPENDENCIES]="automake bc binutils bzip2 ca-certificates cliquer cmake curl ecl eclib-tools fflas-ffpack flintqs g++ gengetopt gfan gfortran git glpk-utils gmp-ecm lcalc libatomic-ops-dev libboost-dev libbraiding-dev libbz2-dev libcdd-dev libcdd-tools libcliquer-dev libcurl4-openssl-dev libec-dev libecm-dev libffi-dev libflint-dev libfreetype-dev libgc-dev libgd-dev libgf2x-dev libgiac-dev libgivaro-dev libglpk-dev libgmp-dev libgsl-dev libhomfly-dev libiml-dev liblfunction-dev liblrcalc-dev liblzma-dev libm4rie-dev libmpc-dev libmpfi-dev libmpfr-dev libncurses-dev libntl-dev libopenblas-dev libpari-dev libpcre3-dev libplanarity-dev libppl-dev libprimesieve-dev libpython3-dev libqhull-dev libreadline-dev librw-dev libsingular4-dev libsqlite3-dev libssl-dev libsuitesparse-dev libsymmetrica2-dev zlib1g-dev libzmq3-dev libzn-poly-dev m4 make nauty openssl palp pari-doc pari-elldata pari-galdata pari-galpol pari-gp2c pari-seadata patch perl pkg-config planarity ppl-dev python3-setuptools python3-venv r-base-dev r-cran-lattice singular sqlite3 sympow tachyon tar tox xcas xz-utils texlive-latex-extra texlive-xetex latexmk pandoc dvipng"
+#PKG[SAGEMATH_DEPENDENCIES]="automake bc binutils bzip2 ca-certificates cliquer cmake curl ecl eclib-tools fflas-ffpack flintqs g++ gengetopt gfan gfortran git glpk-utils gmp-ecm lcalc libatomic-ops-dev libboost-dev libbraiding-dev libbz2-dev libcdd-dev libcdd-tools libcliquer-dev libcurl4-openssl-dev libec-dev libecm-dev libffi-dev libflint-dev libfreetype-dev libgc-dev libgd-dev libgf2x-dev libgiac-dev libgivaro-dev libglpk-dev libgmp-dev libgsl-dev libhomfly-dev libiml-dev liblfunction-dev liblrcalc-dev liblzma-dev libm4rie-dev libmpc-dev libmpfi-dev libmpfr-dev libncurses-dev libntl-dev libopenblas-dev libpari-dev libpcre3-dev libplanarity-dev libppl-dev libprimesieve-dev libpython3-dev libqhull-dev libreadline-dev librw-dev libsingular4-dev libsqlite3-dev libssl-dev libsuitesparse-dev libsymmetrica2-dev zlib1g-dev libzmq3-dev libzn-poly-dev m4 make nauty openssl palp pari-doc pari-elldata pari-galdata pari-galpol pari-gp2c pari-seadata patch perl pkg-config planarity ppl-dev python3-setuptools python3-venv r-base-dev r-cran-lattice singular sqlite3 sympow tachyon tar tox xcas xz-utils texlive-latex-extra texlive-xetex latexmk pandoc dvipng"
 PKG[TOCAADSAMBA]="sssd-ad sssd-tools realmd adcli"
 
 # Packages to be downloaded from the web
@@ -74,7 +74,7 @@ GETPKG["Visual Studio Code"]="https://code.visualstudio.com/sha/download?build=s
 GETPKG["Obsidian"]="https://github.com/obsidianmd/obsidian-releases/releases/download/v1.8.10/obsidian_1.8.10_amd64.deb"
 GETPKG["Balena Etcher"]="https://github.com/balena-io/etcher/releases/download/v2.1.4/balena-etcher_2.1.4_amd64.deb"
 GETPKG["Oracle Java"]="https://download.oracle.com/java/24/latest/jdk-24_linux-x64_bin.deb"
-GETPKG["Sagemath"]="https://github.com/TOCA-LAB/sagemath-ubuntu-deb/releases/download/v0.0.1/sagemath_10.7-0_amd64.deb"
+GETPKG["Sagemath"]="https://github.com/TOCA-LAB/sagemath-ubuntu-deb/releases/download/v0.1/sagemath_10.7-2_amd64.deb"
 
 #  Functions for installing apps -----------------------------------------------
 
@@ -282,7 +282,7 @@ install_system_packages() {
 install_packages_from_web() {
 	msg "Installing packages from web"
 	for name in "${!GETPKG[@]}"; do
-	  echo "🔹 Instaling: $name"
+	  echo "🔹 Installing: $name"
 	  download_deb_and_install "${GETPKG[$name]}"
 	done
 }
