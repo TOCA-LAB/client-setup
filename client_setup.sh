@@ -224,6 +224,56 @@ join_toca_active_directory() {
 
 SETUP_TASKS+=(join_toca_active_directory)
 
+enable_wol_systemd() {
+    # Detect the first active Ethernet interface (non-virtual)
+    iface=$(ip -o link show | awk -F': ' '/state UP/ && $2 !~ /lo/ {print $2; exit}')
+    
+    if [ -z "$iface" ]; then
+        echo "No active network interface found."
+        return 1
+    fi
+
+    echo "Detected active interface: $iface"
+
+    # Create the systemd unit file if it doesn't exist
+    unit_file="/etc/systemd/system/wol@.service"
+
+    if [ ! -f "$unit_file" ]; then
+        echo "Creating $unit_file..."
+        cat <<EOF > "$unit_file"
+[Unit]
+Description=Enable Wake-on-LAN on %i
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/ethtool -s %i wol g
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    fi
+
+    # Reload systemd and enable the service
+    echo "Reloading systemd..."
+    systemctl daemon-reload
+
+    echo "Enabling WoL for interface: $iface"
+    systemctl enable "wol@${iface}.service"
+    systemctl start "wol@${iface}.service"
+
+    # Verify if WoL is active
+    if ethtool "$iface" | grep -q "Wake-on: g"; then
+        echo "✅ Wake-on-LAN successfully enabled and persistent on $iface."
+    else
+        echo "⚠️  Could not verify WoL status on $iface."
+    fi
+}
+
+
+SETUP_TASKS+=(enable_wol_systemd)
+
+
 # ------------------------------------------------------------------------------
 #
 #  Helper functions and global variables
